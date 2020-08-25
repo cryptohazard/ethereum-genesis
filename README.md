@@ -1,5 +1,27 @@
-# ethereum-genesis
-verifier for ethereum genesis
+# ethereum-genesis : verifier for ethereum genesis
+
+First we review the code to see why we cannot change the genesis block or just the allocation from the ICO in that block. We see that the genesis [allocation](https://github.com/ethereum/go-ethereum/blob/master/core/genesis.go#L58) is part of the Genesis structure. We expect it to count for the block hash computation.
+The allocation change the state trie and we see it [here](https://github.com/ethereum/go-ethereum/blob/master/core/genesis.go#L255) and its [root](https://github.com/ethereum/go-ethereum/blob/master/core/genesis.go#L280) goes into the header of the genesis block. Now the missing part is where we compute the hash of the block. The interesting function is [SetupGenesisBlock](https://github.com/ethereum/go-ethereum/blob/fc20680b95da65f952012f3370e5d316f0ba237d/core/genesis.go#L155):
+```
+// SetupGenesisBlock writes or updates the genesis block in db.
+// The block that will be used is:
+//
+//                          genesis == nil       genesis != nil
+//                       +------------------------------------------
+//     db has no genesis |  main-net default  |  genesis
+//     db has genesis    |  from DB           |  genesis (if compatible)
+//
+// The stored chain configuration will be updated if it is compatible (i.e. does not
+// specify a fork block below the local head block). In case of a conflict, the
+// error is a *params.ConfigCompatError and the new, unwritten config is returned.
+//
+// The returned chain configuration is never nil.
+```
+
+We compare the hash and it should give:
+```
+MainnetGenesisHash = common.HexToHash("0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3")
+```
 
 ## Geth RPC
 ```
